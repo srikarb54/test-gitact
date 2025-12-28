@@ -1,4 +1,4 @@
-name: Update counter.txt every 15 minutes
+name: Update counter.txt every 5 minutes
 
 on:
   schedule:
