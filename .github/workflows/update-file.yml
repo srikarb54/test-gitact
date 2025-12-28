@@ -1,0 +1,57 @@
+name: Update counter.txt every 15 minutes
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-counter
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Update counter.txt
+        shell: bash
+        run: |
+          FILE="counter.txt"
+
+          if [ -f "$FILE" ]; then
+            CURRENT=$(grep -E '^value=' "$FILE" | head -n1 | cut -d'=' -f2)
+          fi
+          if ! [[ "$CURRENT" =~ ^[0-9]+$ ]]; then
+            CURRENT=0
+          fi
+
+          NEXT=$((CURRENT + 1))
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          {
+            echo "value=$NEXT"
+            echo "last_updated=$NOW"
+          } > "$FILE"
+
+      - name: Commit and push if changed
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add counter.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Auto-update counter.txt"
+          git push
