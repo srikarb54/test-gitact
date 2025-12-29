@@ -10,12 +10,11 @@ permissions:
 
 concurrency:
   group: update-counter
-  cancel-in-progress: false   # queue instead of cancel  
+  cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,6 +27,8 @@ jobs:
       - run: python update_counter.py
 
       - run: |
+          set -e
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
