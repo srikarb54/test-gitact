@@ -1,8 +1,8 @@
-name: Update counter every 5 minutes
+name: Update counter every x minutes
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
