@@ -34,11 +34,19 @@ jobs:
           git add counter.txt
           git commit -m "Auto update counter" || exit 0
 
-          # Rebase onto latest main, then push (retry a few times)
+          pushed=0
           for i in 1 2 3 4 5; do
             git fetch origin main
             git rebase origin/main || (git rebase --abort && exit 1)
-            git push && break
+            if git push; then
+              pushed=1
+              break
+            fi
             echo "Push failed (attempt $i). Retrying..."
             sleep 2
           done
+
+          if [ "$pushed" -ne 1 ]; then
+            echo "ERROR: Failed to push after retries."
+            exit 1
+          fi
