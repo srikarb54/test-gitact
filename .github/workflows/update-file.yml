@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-counter
+  cancel-in-progress: false   # queue instead of cancel  
+
 jobs:
   update:
     runs-on: ubuntu-latest
