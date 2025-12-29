@@ -1,4 +1,4 @@
-name: Update counter.txt every 5 minutes
+name: Update counter every 5 minutes
 
 on:
   schedule:
@@ -8,50 +8,22 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: update-counter
-  cancel-in-progress: false
-
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Update counter.txt
-        shell: bash
-        run: |
-          FILE="counter.txt"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-          if [ -f "$FILE" ]; then
-            CURRENT=$(grep -E '^value=' "$FILE" | head -n1 | cut -d'=' -f2)
-          fi
-          if ! [[ "$CURRENT" =~ ^[0-9]+$ ]]; then
-            CURRENT=0
-          fi
+      - run: python scripts/update_counter.py
 
-          NEXT=$((CURRENT + 1))
-          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-          {
-            echo "value=$NEXT"
-            echo "last_updated=$NOW"
-          } > "$FILE"
-
-      - name: Commit and push if changed
-        shell: bash
-        run: |
+      - run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add counter.txt
-
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-
-          git commit -m "Auto-update counter.txt"
+          git commit -m "Auto update counter" || exit 0
           git push
